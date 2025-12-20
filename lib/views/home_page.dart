@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart'; // For ScrollDirection
 import 'package:flutter/rendering.dart';
 import '../models/journal_entry.dart';
+import 'AddEntryPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,6 +31,27 @@ class _HomePageState extends State<HomePage> {
       content: 'Learned ListView, BottomNavigationBar, and UI structure.',
       date: '2025-12-21',
       mood: 'excited',
+    ),
+    JournalEntry(
+      id: 3,
+      title: 'UI Done',
+      content: 'Front-end is ready, next step is database.',
+      date: '2025-12-22',
+      mood: 'neutral',
+    ),
+    JournalEntry(
+      id: 3,
+      title: 'UI Done',
+      content: 'Front-end is ready, next step is database.',
+      date: '2025-12-22',
+      mood: 'neutral',
+    ),
+    JournalEntry(
+      id: 3,
+      title: 'UI Done',
+      content: 'Front-end is ready, next step is database.',
+      date: '2025-12-22',
+      mood: 'neutral',
     ),
     JournalEntry(
       id: 3,
@@ -88,7 +110,12 @@ class _HomePageState extends State<HomePage> {
                     0.4 // max 40% of screen
               : 56,
           child: FloatingActionButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddEntryPage()),
+              );
+            },
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -108,22 +135,57 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.book), label: 'Journey'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Calendar',
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() => _currentIndex = index);
+            },
+            backgroundColor: Colors.white,
+            elevation: 0,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: Colors.teal,
+            unselectedItemColor: Colors.grey,
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+            unselectedLabelStyle: const TextStyle(fontSize: 12),
+            showUnselectedLabels: true,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.book, size: 28),
+                label: 'Journey',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today, size: 28),
+                label: 'Calendar',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.photo_library, size: 28),
+                label: 'Medias',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.photo_library, size: 28),
+                label: 'Stats',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.photo_library),
-            label: 'Medias',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -251,8 +313,10 @@ class _HomePageState extends State<HomePage> {
       );
     } else if (_currentIndex == 1) {
       return const Center(child: Text('Calendar Page (later)'));
-    } else {
+    } else if (_currentIndex == 2) {
       return const Center(child: Text('Medias Page (later)'));
+    } else {
+      return const Center(child: Text('Stats Page (later)'));
     }
   }
 

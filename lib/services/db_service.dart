@@ -22,11 +22,7 @@ class DBService {
   Future<Database> _initDB() async {
     final path = join(await getDatabasesPath(), 'journal_intime.db');
 
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -55,10 +51,7 @@ class DBService {
   // =======================
 
   /// Créer une nouvelle entrée AVEC 1 à 5 photos
-  Future<int> insertEntry(
-    JournalEntry entry,
-    List<String> imagePaths,
-  ) async {
+  Future<int> insertEntry(JournalEntry entry, List<String> imagePaths) async {
     if (imagePaths.isEmpty || imagePaths.length > 5) {
       throw Exception('Une entrée doit contenir entre 1 et 5 photos');
     }
@@ -71,10 +64,7 @@ class DBService {
 
       // Insert photos
       for (String path in imagePaths) {
-        await txn.insert('photos', {
-          'entryId': entryId,
-          'imagePath': path,
-        });
+        await txn.insert('photos', {'entryId': entryId, 'imagePath': path});
       }
 
       return entryId;
@@ -84,8 +74,7 @@ class DBService {
   /// Récupérer toutes les entrées (du plus récent au plus ancien)
   Future<List<JournalEntry>> getAllEntries() async {
     final db = await database;
-    final result =
-        await db.query('entries', orderBy: 'date DESC');
+    final result = await db.query('entries', orderBy: 'date DESC');
 
     return result.map((e) => JournalEntry.fromMap(e)).toList();
   }
@@ -93,8 +82,7 @@ class DBService {
   /// Récupérer une entrée par ID
   Future<JournalEntry?> getEntryById(int id) async {
     final db = await database;
-    final result =
-        await db.query('entries', where: 'id = ?', whereArgs: [id]);
+    final result = await db.query('entries', where: 'id = ?', whereArgs: [id]);
 
     if (result.isNotEmpty) {
       return JournalEntry.fromMap(result.first);
@@ -114,13 +102,18 @@ class DBService {
   }
 
   /// Supprimer une entrée (photos supprimées automatiquement)
-  Future<int> deleteEntry(int entryId) async {
+  Future<void> deleteEntry(int entryId) async {
     final db = await database;
-    return await db.delete(
-      'entries',
-      where: 'id = ?',
-      whereArgs: [entryId],
-    );
+    // return await db.delete(
+    //   'entries',
+    //   where: 'id = ?',
+    //   whereArgs: [entryId],
+    // );
+    // delete photos first
+    await db.delete('photos', where: 'entryId = ?', whereArgs: [entryId]);
+
+    // delete entry
+    await db.delete('entries', where: 'id = ?', whereArgs: [entryId]);
   }
 
   /// Rechercher des entrées par titre ou contenu
@@ -163,6 +156,8 @@ class DBService {
   // }
 
   /// Récupérer toutes les photos d'une entrée
+  ///
+
   Future<List<Photo>> getPhotosByEntry(int entryId) async {
     final db = await database;
     final result = await db.query(
@@ -177,11 +172,7 @@ class DBService {
   /// Supprimer une photo spécifique
   Future<int> deletePhoto(int photoId) async {
     final db = await database;
-    return await db.delete(
-      'photos',
-      where: 'id = ?',
-      whereArgs: [photoId],
-    );
+    return await db.delete('photos', where: 'id = ?', whereArgs: [photoId]);
   }
 
   /// Supprimer toutes les photos d'une entrée
