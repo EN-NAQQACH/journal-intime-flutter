@@ -1,7 +1,7 @@
 class Photo {
   int? id; // AUTOINCREMENT
   int entryId; // Foreign key -> JournalEntry.id
-  String imagePath; // Local file path
+  String imagePath;
 
   Photo({
     this.id,

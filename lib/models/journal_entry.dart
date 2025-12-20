@@ -2,8 +2,8 @@ class JournalEntry {
   int? id; // AUTOINCREMENT
   String title;
   String content;
-  String date; // ISO string
-  String mood; // happy, sad, neutral, angry, excited
+  String date; 
+  String mood; 
 
   JournalEntry({
     this.id,
