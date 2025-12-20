@@ -1,7 +1,7 @@
 class Photo {
-  int? id;
-  int entryId; // foreign key
-  String imagePath;
+  int? id; // AUTOINCREMENT
+  int entryId; // Foreign key -> JournalEntry.id
+  String imagePath; // Local file path
 
   Photo({
     this.id,
@@ -9,15 +9,16 @@ class Photo {
     required this.imagePath,
   });
 
+  // Convert object to Map (for SQLite)
   Map<String, dynamic> toMap() {
-    var map = <String, dynamic>{
+    return {
+      'id': id,
       'entryId': entryId,
       'imagePath': imagePath,
     };
-    if (id != null) map['id'] = id;
-    return map;
   }
 
+  // Convert Map to object (from SQLite)
   factory Photo.fromMap(Map<String, dynamic> map) {
     return Photo(
       id: map['id'],

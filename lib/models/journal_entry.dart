@@ -1,9 +1,9 @@
 class JournalEntry {
-  int? id;
+  int? id; // AUTOINCREMENT
   String title;
   String content;
-  String date; 
-  String mood; 
+  String date; // ISO string
+  String mood; // happy, sad, neutral, angry, excited
 
   JournalEntry({
     this.id,
@@ -13,19 +13,18 @@ class JournalEntry {
     required this.mood,
   });
 
-
+  // Convert object to Map (for SQLite)
   Map<String, dynamic> toMap() {
-    var map = <String, dynamic>{
+    return {
+      'id': id,
       'title': title,
       'content': content,
       'date': date,
       'mood': mood,
     };
-    if (id != null) map['id'] = id;
-    return map;
   }
 
- 
+  // Convert Map to object (from SQLite)
   factory JournalEntry.fromMap(Map<String, dynamic> map) {
     return JournalEntry(
       id: map['id'],
