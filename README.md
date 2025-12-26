@@ -27,7 +27,6 @@ A beautiful, feature-rich personal journal application built with Flutter. Docum
 
 ### 🔐 Authentication
 - **Email/Password** authentication
-- **Google Sign-In** integration
 - Secure user profile management
 
 ### 📊 Analytics & Stats
@@ -82,7 +81,7 @@ A beautiful, feature-rich personal journal application built with Flutter. Docum
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/journal_intime.git
+   git clone https://github.com/EN-NAQQACH/journal-intime-flutter.git
    cd journal_intime
    ```
 
@@ -91,7 +90,7 @@ A beautiful, feature-rich personal journal application built with Flutter. Docum
    flutter pub get
    ```
 
-3. **Configure Firebase**
+<!-- 3. **Configure Firebase**
    
    **For Android:**
    - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
@@ -107,22 +106,22 @@ A beautiful, feature-rich personal journal application built with Flutter. Docum
    **Enable Authentication:**
    - Go to Firebase Console → Authentication
    - Enable Email/Password provider
-   - Enable Google Sign-In provider
+   - Enable Google Sign-In provider -->
 
-4. **Add SHA-1 fingerprint (for Google Sign-In)**
+<!-- 3. **Add SHA-1 fingerprint (for Google Sign-In)**
    ```bash
    cd android
    ./gradlew signingReport
    ```
-   Copy the SHA-1 and add it to your Firebase Android app settings.
+   Copy the SHA-1 and add it to your Firebase Android app settings. -->
 
-5. **Create assets folders**
+3. **Create assets folders**
    ```bash
    mkdir -p assets/images assets/intro
    ```
    Add intro images (intro1.png, intro2.png, intro3.png) to `assets/intro/`
 
-6. **Run the app**
+4. **Run the app**
    ```bash
    flutter run
    ```
@@ -171,7 +170,7 @@ lib/
 - **Language:** Dart 3.0+
 - **State Management:** Provider
 - **Local Database:** SQLite (sqflite)
-- **Authentication:** Firebase Auth
+- **Authentication:** email & password
 - **Image Handling:** image_picker, path_provider
 - **Charts:** fl_chart
 - **Calendar:** table_calendar
@@ -213,9 +212,6 @@ dependencies:
   image_picker: ^1.0.7
   
   # Authentication
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.16.0
-  google_sign_in: ^6.2.1
   crypto: ^3.0.3
   
   # UI Components
@@ -263,7 +259,7 @@ See the [issues page](https://github.com/yourusername/journal_intime/issues) for
 
 ---
 
-## 📝 Roadmap
+<!-- ## 📝 Roadmap
 
 - [ ] Cloud sync (Firebase Firestore)
 - [ ] Voice notes
@@ -273,7 +269,7 @@ See the [issues page](https://github.com/yourusername/journal_intime/issues) for
 - [ ] AI-powered mood insights
 - [ ] Social features (optional sharing)
 - [ ] Widget for home screen
-- [ ] Wear OS support
+- [ ] Wear OS support -->
 
 ---
 
@@ -310,16 +306,16 @@ SOFTWARE.
 ## 👥 Authors
 
 **Development Team:**
+- EN-NAQQACH Mohssine
 - BOUAKKA Issam
 - ELKEBDANI Hicham  
-- EN-NAQQACH Mohssine
+
 
 ---
 
 ## 🙏 Acknowledgments
 
 - [Flutter Team](https://flutter.dev) for the amazing framework
-- [Firebase](https://firebase.google.com) for authentication services
 - [Material Design](https://material.io) for design guidelines
 - All open-source contributors whose packages made this possible
 
@@ -330,9 +326,8 @@ SOFTWARE.
 If you like this project, please ⭐ star it on GitHub!
 
 For questions or support:
-- 📧 Email: support@journalintime.com
-- 🐦 Twitter: [@journalintime](https://twitter.com/journalintime)
-- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/journal_intime/discussions)
+- 📧 Email: mohssineennaqqach0@gmail.com
+- 💬 Discussions: [GitHub Discussions](https://github.com/EN-NAQQACH/journal-intime-flutter.git)
 
 ---
 
