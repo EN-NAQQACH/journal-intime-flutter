@@ -26,16 +26,16 @@ class User {
     };
   }
 
-  factory User.fromMap(Map<String, dynamic> map) {
-    return User(
-      id: map['id'],
-      username: map['username'],
-      email: map['email'],
-      photoPath: map['photoPath'],
-      passwordHash: map['passwordHash'],
-      createdAt: DateTime.parse(map['createdAt']),
-    );
-  }
+  User.fromMap(Map<String, dynamic> map) 
+    :
+      id= map['id'],
+      username = map['username'],
+      email = map['email'],
+      photoPath = map['photoPath'],
+      passwordHash = map['passwordHash'],
+      createdAt = DateTime.parse(map['createdAt']);
+   
+  
 
   User copyWith({
     int? id,

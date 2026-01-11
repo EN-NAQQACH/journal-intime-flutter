@@ -19,7 +19,8 @@ class JournalEntry {
     this.password,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
+  })
+  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
   Map<String, dynamic> toMap() {
@@ -36,19 +37,17 @@ class JournalEntry {
     };
   }
 
-  factory JournalEntry.fromMap(Map<String, dynamic> map) {
-    return JournalEntry(
-      id: map['id'],
-      userId: map['userId'],
-      title: map['title'],
-      content: map['content'],
-      date: DateTime.parse(map['date']),
-      mood: map['mood'],
-      password: map['password'],
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
-    );
-  }
+  JournalEntry.fromMap(Map<String, dynamic> map)
+      : id = map['id'],
+        userId = map['userId'],
+        title = map['title'],
+        content = map['content'],
+        date = DateTime.parse(map['date']),
+        mood = map['mood'],
+        password = map['password'],
+        createdAt =  DateTime.parse(map['createdAt']),
+        updatedAt =  DateTime.parse(map['updatedAt']);
+
 
   JournalEntry copyWith({
     int? id,

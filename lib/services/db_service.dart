@@ -2,186 +2,183 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/journal_entry.dart';
 import '../models/photo.dart';
+import '../models/user.dart';
 
 class DBService {
-  static final DBService _instance = DBService._internal();
-  factory DBService() => _instance;
-  DBService._internal();
 
-  static Database? _database;
+  static final DBService instance = DBService._init();
+  static Database? _database; 
+  DBService._init();
 
-  // =======================
-  // INITIALISATION DATABASE
-  // =======================
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB();
+
+  Future<Database> get database async { 
+    if (_database != null) return _database!; 
+    _database = await _initDB('journal.db'); 
     return _database!;
   }
 
-  Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'journal_intime.db');
 
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+  Future<Database> _initDB(String filePath) async { 
+    final dbPath = await getDatabasesPath(); 
+    final path = join(dbPath, filePath);  
+    return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
-  Future<void> _onCreate(Database db, int version) async {
+
+  Future _createDB(Database db, int version) async { 
+
+    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const textType = 'TEXT NOT NULL';
+    const textTypeNull = 'TEXT';
+
+    await db.execute('''
+      CREATE TABLE users (
+        id $idType,
+        username $textType,
+        email $textType,
+        photoPath $textTypeNull,
+        passwordHash $textTypeNull,
+        createdAt $textType
+      )
+    ''');
+
     await db.execute('''
       CREATE TABLE entries (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        content TEXT,
-        date TEXT,
-        mood TEXT
+        id $idType,
+        userId INTEGER NOT NULL,
+        title $textType,
+        content $textType,
+        date $textType,
+        mood $textType,
+        password $textTypeNull,
+        createdAt $textType,
+        updatedAt $textType,
+        FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
 
     await db.execute('''
       CREATE TABLE photos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        entryId INTEGER,
-        imagePath TEXT,
-        FOREIGN KEY (entryId) REFERENCES entries(id) ON DELETE CASCADE
+        id $idType,
+        entryId INTEGER NOT NULL,
+        imagePath $textType,
+        createdAt $textType,
+        FOREIGN KEY (entryId) REFERENCES entries (id) ON DELETE CASCADE
       )
     ''');
   }
 
-  // =======================
-  // JOURNAL ENTRY METHODS
-  // =======================
-
-  /// Créer une nouvelle entrée AVEC 1 à 5 photos
-  Future<int> insertEntry(JournalEntry entry, List<String> imagePaths) async {
-    if (imagePaths.isEmpty || imagePaths.length > 5) {
-      throw Exception('Une entrée doit contenir entre 1 et 5 photos');
-    }
-
-    final db = await database;
-
-    return await db.transaction((txn) async {
-      // Insert entry
-      int entryId = await txn.insert('entries', entry.toMap());
-
-      // Insert photos
-      for (String path in imagePaths) {
-        await txn.insert('photos', {'entryId': entryId, 'imagePath': path});
-      }
-
-      return entryId;
-    });
+  Future<User> createUser(User user) async {
+    final db = await instance.database; 
+    final id = await db.insert('users', user.toMap()); 
+    return user.copyWith(id: id);
   }
 
-  /// Récupérer toutes les entrées (du plus récent au plus ancien)
-  Future<List<JournalEntry>> getAllEntries() async {
-    final db = await database;
-    final result = await db.query('entries', orderBy: 'date DESC');
-
-    return result.map((e) => JournalEntry.fromMap(e)).toList();
-  }
-
-  /// Récupérer une entrée par ID
-  Future<JournalEntry?> getEntryById(int id) async {
-    final db = await database;
-    final result = await db.query('entries', where: 'id = ?', whereArgs: [id]);
-
-    if (result.isNotEmpty) {
-      return JournalEntry.fromMap(result.first);
-    }
+  Future<User?> getUserByEmail(String email) async {
+    final db = await instance.database;
+    final maps = await db.query('users', where: 'email = ?', whereArgs: [email]);
+    if (maps.isNotEmpty) return User.fromMap(maps.first);
     return null;
   }
 
-  /// Mettre à jour une entrée
-  Future<int> updateEntry(JournalEntry entry) async {
-    final db = await database;
-    return await db.update(
-      'entries',
-      entry.toMap(),
-      where: 'id = ?',
-      whereArgs: [entry.id],
-    );
+  Future<int> updateUser(User user) async {
+    final db = await instance.database;
+    return db.update('users', user.toMap(), where: 'id = ?', whereArgs: [user.id]); 
   }
 
-  /// Supprimer une entrée (photos supprimées automatiquement)
-  Future<void> deleteEntry(int entryId) async {
-    final db = await database;
-    // return await db.delete(
-    //   'entries',
-    //   where: 'id = ?',
-    //   whereArgs: [entryId],
-    // );
-    // delete photos first
-    await db.delete('photos', where: 'entryId = ?', whereArgs: [entryId]);
-
-    // delete entry
-    await db.delete('entries', where: 'id = ?', whereArgs: [entryId]);
+  Future<JournalEntry> createEntry(JournalEntry entry) async {
+    final db = await instance.database;
+    final id = await db.insert('entries', entry.toMap());
+    return entry.copyWith(id: id);
   }
 
-  /// Rechercher des entrées par titre ou contenu
-  Future<List<JournalEntry>> searchEntries(String keyword) async {
-    final db = await database;
-    final result = await db.query(
+  Future<List<JournalEntry>> getEntriesByUser(int userId) async {
+    final db = await instance.database;
+    final maps = await db.query('entries', where: 'userId = ?', whereArgs: [userId], orderBy: 'date DESC');
+    return maps.map((map) => JournalEntry.fromMap(map)).toList();
+  }
+
+  Future<List<JournalEntry>> searchEntries(int userId, String query) async {
+    final db = await instance.database;
+    final maps = await db.query(
       'entries',
-      where: 'title LIKE ? OR content LIKE ?',
-      whereArgs: ['%$keyword%', '%$keyword%'],
+      where: 'userId = ? AND (title LIKE ? OR content LIKE ?)',
+      whereArgs: [userId, '%$query%', '%$query%'],
       orderBy: 'date DESC',
     );
-
-    return result.map((e) => JournalEntry.fromMap(e)).toList();
+    return maps.map((map) => JournalEntry.fromMap(map)).toList();
   }
 
-  // =======================
-  // PHOTO METHODS
-  // =======================
+  Future<List<JournalEntry>> getEntriesByMood(int userId, String mood) async {
+    final db = await instance.database;
+    final maps = await db.query('entries', where: 'userId = ? AND mood = ?', whereArgs: [userId, mood], orderBy: 'date DESC');
+    return maps.map((map) => JournalEntry.fromMap(map)).toList();
+  }
 
-  /// Ajouter 1 à 5 photos à une entrée
-  // Future<void> insertPhotos(
-  //   int entryId,
-  //   List<String> imagePaths,
-  // ) async {
-  //   if (imagePaths.isEmpty || imagePaths.length > 5) {
-  //     throw Exception('Entre 1 et 5 photos autorisées');
-  //   }
+  Future<List<JournalEntry>> getEntriesByDate(int userId, DateTime date) async {
+    final db = await instance.database;
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+    final maps = await db.query(
+      'entries',
+      where: 'userId = ? AND date >= ? AND date < ?',
+      whereArgs: [userId, startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+      orderBy: 'date DESC',
+    );
+    return maps.map((map) => JournalEntry.fromMap(map)).toList();
+  }
 
-  //   final db = await database;
-  //   Batch batch = db.batch();
+  Future<int> updateEntry(JournalEntry entry) async {
+    final db = await instance.database;
+    return db.update('entries', entry.toMap(), where: 'id = ?', whereArgs: [entry.id]);
+  }
 
-  //   for (String path in imagePaths) {
-  //     batch.insert('photos', {
-  //       'entryId': entryId,
-  //       'imagePath': path,
-  //     });
-  //   }
+  Future<int> deleteEntry(int id) async {
+    final db = await instance.database;
+    return db.delete('entries', where: 'id = ?', whereArgs: [id]);
+  }
 
-  //   await batch.commit(noResult: true);
-  // }
-
-  /// Récupérer toutes les photos d'une entrée
-  ///
+  Future<Photo> createPhoto(Photo photo) async {
+    final db = await instance.database;
+    await db.insert('photos', photo.toMap());
+    return photo;
+  }
 
   Future<List<Photo>> getPhotosByEntry(int entryId) async {
-    final db = await database;
-    final result = await db.query(
-      'photos',
-      where: 'entryId = ?',
-      whereArgs: [entryId],
-    );
-
-    return result.map((e) => Photo.fromMap(e)).toList();
+    final db = await instance.database;
+    final maps = await db.query('photos', where: 'entryId = ?', whereArgs: [entryId]);
+    return maps.map((map) => Photo.fromMap(map)).toList();
   }
 
-  /// Supprimer une photo spécifique
-  Future<int> deletePhoto(int photoId) async {
-    final db = await database;
-    return await db.delete('photos', where: 'id = ?', whereArgs: [photoId]);
+  Future<List<Photo>> getAllPhotosByMood(int userId, String mood) async {
+    final db = await instance.database;
+    final maps = await db.rawQuery('''
+      SELECT p.* FROM photos p
+      INNER JOIN entries e ON p.entryId = e.id
+      WHERE e.userId = ? AND e.mood = ?
+      ORDER BY p.createdAt DESC
+    ''', [userId, mood]);
+    return maps.map((map) => Photo.fromMap(map)).toList();
   }
 
-  /// Supprimer toutes les photos d'une entrée
-  Future<int> deletePhotosByEntry(int entryId) async {
-    final db = await database;
-    return await db.delete(
-      'photos',
-      where: 'entryId = ?',
-      whereArgs: [entryId],
-    );
+  Future<List<Photo>> getAllPhotosByUser(int userId) async {
+    final db = await instance.database;
+    final maps = await db.rawQuery('''
+      SELECT p.* FROM photos p
+      INNER JOIN entries e ON p.entryId = e.id
+      WHERE e.userId = ?
+      ORDER BY p.createdAt DESC
+    ''', [userId]);
+    return maps.map((map) => Photo.fromMap(map)).toList();
+  }
+
+  Future<int> deletePhoto(int id) async {
+    final db = await instance.database;
+    return db.delete('photos', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future close() async {
+    final db = await instance.database;
+    db.close();
   }
 }
